@@ -137,6 +137,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 children: [
                   const _InfoPage(
                     icon: Icons.record_voice_over_outlined,
+                    image: 'assets/branding/logo_mark.png',
                     title: 'Backseat',
                     body:
                         'A quiet second opinion for your meetings — listens alongside '
@@ -225,11 +226,15 @@ class _InfoPage extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.body,
+    this.image,
   });
 
   final IconData icon;
   final String title;
   final String body;
+
+  /// Asset shown instead of [icon] (the app logo on the welcome page).
+  final String? image;
 
   @override
   Widget build(BuildContext context) {
@@ -240,7 +245,16 @@ class _InfoPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: tokens.accent),
+          if (image != null)
+            Image.asset(
+              image!,
+              height: 120,
+              semanticLabel: 'Backseat logo',
+              errorBuilder: (_, _, _) =>
+                  Icon(icon, size: 64, color: tokens.accent),
+            )
+          else
+            Icon(icon, size: 64, color: tokens.accent),
           const SizedBox(height: 24),
           Text(
             title,

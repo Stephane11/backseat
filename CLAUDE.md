@@ -102,7 +102,9 @@ flutter test
 dart run build_runner build --delete-conflicting-outputs   # after editing Drift tables
 flutter run                                    # debug, USB or wireless debugging
 flutter build apk --release --split-per-abi    # release; signs with android/key.properties
-flutter install --use-application-binary build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+adb install -r build/app/outputs/flutter-apk/app-arm64-v8a-release.apk   # update, keeps app data
+# Never use `flutter install`: it uninstalls first, wiping the API key, settings,
+# meetings and downloaded models.
 ```
 
 Android SDK licenses must be accepted once per machine: `flutter doctor --android-licenses`.

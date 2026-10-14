@@ -1,5 +1,7 @@
 # Backseat
 
+![Backseat](assets/branding/banner.png)
+
 Personal Android app that transcribes a work meeting on-device and, when you tap
 **Analyse**, sends the transcript to the Claude API for expert feedback: issues, risks,
 questions to ask, and better ideas. Product brief: [`docs/PROJECT_BRIEF.md`](docs/PROJECT_BRIEF.md).

@@ -78,6 +78,7 @@ flutter:
   assets:
     - assets/sample_transcript.txt
     - assets/prompts/
+    - assets/branding/logo_mark.png
 
   fonts:
     - family: Source Serif 4
