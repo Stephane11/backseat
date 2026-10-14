@@ -1,0 +1,25 @@
+Okay so let's get started, thanks everyone for joining the churn model review.
+So the current approach is a gradient boosted tree trained on the last ninety days of usage data.
+We're using accuracy as the main metric right now, it's around eighty nine percent on the holdout set.
+Right, but the holdout set is a random split, not a time based split, so there might be some leakage from future behaviour into the training window.
+That's a fair point, we haven't checked for that specifically.
+The other thing is churn is pretty rare in this population, so accuracy might not be the most informative metric, we should probably look at something like precision recall or lift.
+Marketing wants a single number they can put on a dashboard though.
+We can still give them a single number, just a more appropriate one, like area under the precision recall curve, and then translate that into expected revenue saved for the dashboard.
+Good idea, let's note that down.
+For features we're using account age, number of logins last thirty days, support tickets opened, and plan tier.
+Are we pulling any of that from the new Delta Live Tables pipeline or still the old batch job?
+Still the old batch job for now, the DLT migration is planned for next quarter.
+Okay, worth flagging that the two pipelines might disagree on definitions, so if the handoff happens mid quarter the feature distributions could shift under the model without anyone noticing.
+Also are we monitoring for drift at all right now?
+No, nothing automated yet, we just look at the numbers manually every couple of weeks.
+We should probably set up a simple drift check on the input feature distributions and on the prediction distribution before this goes to more stakeholders.
+On the deployment side, how is this actually going to be served, is it batch scored or an online endpoint?
+Batch scored nightly into a table that the marketing team's tool reads from.
+That simplifies a lot of things actually, means we don't need to worry about latency, just freshness and making sure the nightly job has alerting if it fails silently.
+Should we also think about a simpler baseline, like a rules based heuristic on login recency, just to sanity check the model is actually adding value over something trivial?
+Yeah that's worth doing before we present results, otherwise it's hard to know if eighty nine percent accuracy is actually impressive or just reflects the class imbalance.
+Let's also make sure we've got an owner for this once it ships, and a rough timeline for the DLT migration so we know when the features might change under us.
+Good, I'll write that up, anything else before we wrap?
+Just one thing, let's double check PII handling on the support ticket text field, since we might be pulling in free text that hasn't been scrubbed.
+Noted, I'll follow up with the data engineering team on that separately.
