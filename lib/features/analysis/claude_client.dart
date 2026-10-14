@@ -7,7 +7,7 @@ import 'package:dio/dio.dart';
 /// official Dart SDK). Never logs request bodies: they contain transcript
 /// text.
 class ClaudeClient {
-  ClaudeClient({required this.apiKey, Dio? dio})
+  ClaudeClient({required this.apiKey, this.workspaceId = '', Dio? dio})
     : _dio =
           dio ??
           Dio(
@@ -26,6 +26,10 @@ class ClaudeClient {
   static const betas = ['server-side-fallback-2026-07-01'];
 
   final String apiKey;
+
+  /// Routes the request to a workspace; needed when the key isn't scoped
+  /// to exactly one workspace. Omitted when empty.
+  final String workspaceId;
   final Dio _dio;
 
   /// Streams decoded SSE `data:` payloads for one request.
@@ -44,6 +48,7 @@ class ClaudeClient {
           validateStatus: (_) => true,
           headers: {
             'x-api-key': apiKey,
+            if (workspaceId.isNotEmpty) 'anthropic-workspace-id': workspaceId,
             'anthropic-version': apiVersion,
             'anthropic-beta': betas.join(','),
             'content-type': 'application/json',
@@ -119,6 +124,7 @@ Stream<Map<String, dynamic>> parseSse(Stream<List<int>> bytes) async* {
 
 enum ClaudeErrorKind {
   noApiKey,
+  workspaceRequired,
   auth,
   permission,
   billing,
@@ -171,6 +177,19 @@ class ClaudeApiException implements Exception {
     final notEnabled = RegExp(
       r'not enabled|disabled|enable it|not available|not allowed',
     ).hasMatch(lower);
+    if (lower.contains('workspace') &&
+        (lower.contains('workspace-id') ||
+            lower.contains('workspace id') ||
+            lower.contains('workspace_id') ||
+            lower.contains('scoped'))) {
+      return const ClaudeApiException(
+        ClaudeErrorKind.workspaceRequired,
+        'This API key works across workspaces, so Claude needs to know which '
+        'one to use. Add your Workspace ID in Settings → Claude API (find it '
+        'in the Claude Console under Workspaces; it starts with "wrkspc_"), '
+        'or use a key created inside a single workspace.',
+      );
+    }
     if (aboutWebTools && notEnabled) {
       return const ClaudeApiException(
         ClaudeErrorKind.webSearchDisabled,

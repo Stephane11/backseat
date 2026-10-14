@@ -187,6 +187,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
   void setCheckDocsDefault(bool value) =>
       _update(state.copyWith(checkDocsDefault: value));
 
+  void setWorkspaceId(String value) =>
+      _update(state.copyWith(workspaceId: value.trim()));
+
   void setMaxDocLookups(int value) =>
       _update(state.copyWith(maxDocLookups: value));
 

@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:backseat/core/models/meeting.dart';
 import 'package:backseat/core/models/segment.dart';
+import 'package:backseat/core/models/settings_state.dart';
 import 'package:backseat/core/providers/app_providers.dart';
 import 'package:backseat/core/storage/api_key_store.dart';
 import 'package:backseat/features/analysis/analysis_service.dart';
@@ -107,16 +108,21 @@ void main() {
   (AnalysisService, FakeAdapter) build(
     List<ResponseBody Function()> responses, {
     String? apiKey = 'sk-ant-test',
+    String workspaceId = '',
   }) {
     final adapter = FakeAdapter(responses);
     final container = ProviderContainer(
       overrides: [
         apiKeyStoreProvider.overrideWithValue(InMemoryApiKeyStore(apiKey)),
+        initialPrefsProvider.overrideWithValue(
+          StoredPrefs(settings: SettingsState(workspaceId: workspaceId)),
+        ),
         analysisServiceProvider.overrideWith(
           (ref) => ClaudeAnalysisService(
             ref,
-            client: (key) => ClaudeClient(
+            client: (key, workspace) => ClaudeClient(
               apiKey: key,
+              workspaceId: workspace,
               dio: Dio()..httpClientAdapter = adapter,
             ),
           ),
@@ -150,6 +156,56 @@ void main() {
       'server-side-fallback-2026-07-01',
     );
   });
+
+  test('sends anthropic-workspace-id only when a workspace is set', () async {
+    final (plain, plainAdapter) = build([
+      () => sseResponse(textMessage(validJson)),
+    ]);
+    await plain.analyse(meeting, checkDocs: false);
+    expect(
+      plainAdapter.headers.single.containsKey('anthropic-workspace-id'),
+      isFalse,
+    );
+
+    final (scoped, scopedAdapter) = build([
+      () => sseResponse(textMessage(validJson)),
+    ], workspaceId: 'wrkspc_01abc');
+    await scoped.analyse(meeting, checkDocs: false);
+    expect(
+      scopedAdapter.headers.single['anthropic-workspace-id'],
+      'wrkspc_01abc',
+    );
+  });
+
+  test(
+    'a missing-workspace error points to the Workspace ID setting',
+    () async {
+      final (service, _) = build([
+        () => ResponseBody.fromString(
+          jsonEncode({
+            'type': 'error',
+            'error': {
+              'type': 'invalid_request_error',
+              'message':
+                  'The API key is not scoped to a workspace, so this request '
+                  'must include the anthropic-workspace-id header.',
+            },
+          }),
+          400,
+        ),
+      ]);
+      expect(
+        () => service.analyse(meeting, checkDocs: false),
+        throwsA(
+          isA<ClaudeApiException>().having(
+            (e) => e.kind,
+            'kind',
+            ClaudeErrorKind.workspaceRequired,
+          ),
+        ),
+      );
+    },
+  );
 
   test('continues a pause_turn by echoing the server tool turn', () async {
     final (service, adapter) = build([

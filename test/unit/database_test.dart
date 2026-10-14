@@ -96,6 +96,7 @@ void main() {
       customVocabulary: ['dbt'],
       docDomains: ['learn.microsoft.com'],
       maxDocLookups: 3,
+      workspaceId: 'wrkspc_01abc',
     );
     await db.putSetting(PrefKeys.settings, jsonEncode(settings.toJson()));
     await db.putSetting(PrefKeys.onboardingComplete, 'true');
@@ -109,6 +110,7 @@ void main() {
     expect(prefs.settings.finalPassModel, FinalPassModel.whisperBaseEn);
     expect(prefs.settings.customVocabulary, ['dbt']);
     expect(prefs.settings.maxDocLookups, 3);
+    expect(prefs.settings.workspaceId, 'wrkspc_01abc');
   });
 
   test('a meeting left open by a crash is closed on load', () async {

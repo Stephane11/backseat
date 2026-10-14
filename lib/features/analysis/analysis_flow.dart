@@ -424,7 +424,8 @@ class _ErrorView extends StatelessWidget {
       ClaudeErrorKind.noApiKey ||
       ClaudeErrorKind.auth ||
       ClaudeErrorKind.permission ||
-      ClaudeErrorKind.webSearchDisabled => true,
+      ClaudeErrorKind.webSearchDisabled ||
+      ClaudeErrorKind.workspaceRequired => true,
       _ => false,
     };
     return ListView(

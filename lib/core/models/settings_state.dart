@@ -48,6 +48,7 @@ class SettingsState {
     this.checkDocsDefault = true,
     this.docDomains = kDefaultDocDomains,
     this.maxDocLookups = 5,
+    this.workspaceId = '',
   });
 
   /// Mirrors whether a key exists in secure storage; never persisted here.
@@ -64,6 +65,10 @@ class SettingsState {
   final List<String> docDomains;
   final int maxDocLookups;
 
+  /// Sent as `anthropic-workspace-id`. Required for API keys that aren't
+  /// bound to a single workspace; empty for workspace-scoped keys.
+  final String workspaceId;
+
   SettingsState copyWith({
     bool? hasApiKey,
     String? analysisModel,
@@ -75,6 +80,7 @@ class SettingsState {
     bool? checkDocsDefault,
     List<String>? docDomains,
     int? maxDocLookups,
+    String? workspaceId,
   }) {
     return SettingsState(
       hasApiKey: hasApiKey ?? this.hasApiKey,
@@ -87,6 +93,7 @@ class SettingsState {
       checkDocsDefault: checkDocsDefault ?? this.checkDocsDefault,
       docDomains: docDomains ?? this.docDomains,
       maxDocLookups: maxDocLookups ?? this.maxDocLookups,
+      workspaceId: workspaceId ?? this.workspaceId,
     );
   }
 
@@ -100,6 +107,7 @@ class SettingsState {
     'checkDocsDefault': checkDocsDefault,
     'docDomains': docDomains,
     'maxDocLookups': maxDocLookups,
+    'workspaceId': workspaceId,
   };
 
   /// Tolerant of missing/unknown keys so older saved settings still load.
@@ -141,6 +149,7 @@ class SettingsState {
           defaults.docDomains,
       maxDocLookups:
           (json['maxDocLookups'] as num?)?.toInt() ?? defaults.maxDocLookups,
+      workspaceId: json['workspaceId'] as String? ?? defaults.workspaceId,
     );
   }
 }

@@ -24,6 +24,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _apiKeyController = TextEditingController();
   final _vocabController = TextEditingController();
   final _domainController = TextEditingController();
+  late final TextEditingController _workspaceController;
   late final TextEditingController _contextController;
   bool _savingKey = false;
 
@@ -33,6 +34,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _contextController = TextEditingController(
       text: ref.read(settingsProvider).globalContextNote,
     );
+    _workspaceController = TextEditingController(
+      text: ref.read(settingsProvider).workspaceId,
+    );
   }
 
   @override
@@ -40,6 +44,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _apiKeyController.dispose();
     _vocabController.dispose();
     _domainController.dispose();
+    _workspaceController.dispose();
     _contextController.dispose();
     super.dispose();
   }
@@ -175,6 +180,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Text(
             'Stored encrypted with the Android Keystore. Get a key at '
             'console.anthropic.com.',
+            style: hint,
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _workspaceController,
+            autocorrect: false,
+            enableSuggestions: false,
+            decoration: const InputDecoration(
+              labelText: 'Workspace ID (optional)',
+              hintText: 'wrkspc_...',
+            ),
+            onChanged: notifier.setWorkspaceId,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "Only needed if your key isn't tied to one workspace (the API "
+            'then asks for a workspace ID). Find it in the Claude Console '
+            'under Settings → Workspaces.',
             style: hint,
           ),
           const SizedBox(height: 12),

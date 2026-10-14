@@ -43,11 +43,14 @@ abstract class AnalysisService {
 class ClaudeAnalysisService implements AnalysisService {
   ClaudeAnalysisService(
     this.ref, {
-    ClaudeClient Function(String apiKey)? client,
-  }) : _clientFactory = client ?? ((key) => ClaudeClient(apiKey: key));
+    ClaudeClient Function(String apiKey, String workspaceId)? client,
+  }) : _clientFactory =
+           client ??
+           ((key, workspace) =>
+               ClaudeClient(apiKey: key, workspaceId: workspace));
 
   final Ref ref;
-  final ClaudeClient Function(String apiKey) _clientFactory;
+  final ClaudeClient Function(String apiKey, String workspaceId) _clientFactory;
   String? _systemPrompt;
   String? _docsAddendum;
 
@@ -75,7 +78,7 @@ class ClaudeAnalysisService implements AnalysisService {
     );
 
     final settings = ref.read(settingsProvider);
-    final client = _clientFactory(apiKey);
+    final client = _clientFactory(apiKey, settings.workspaceId);
     final input = AnalysisInput(
       segments: meeting.finalSegments,
       meetingTitle: meeting.title,
